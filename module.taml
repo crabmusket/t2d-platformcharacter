@@ -1,0 +1,6 @@
+<ModuleDefinition
+   ModuleId="PlatformCharacter"
+   VersionId="0.0"
+   ScriptFile="main.cs"
+   CreateFunction="create"
+   DestroyFunction="destroy" />
