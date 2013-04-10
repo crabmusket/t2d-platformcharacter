@@ -18,10 +18,11 @@ function PlatformCharacter::destroy(%this) {
    }
 }
 
-$PlatformCharacter::DefaultMoveSpeed = 100;
+$PlatformCharacter::DefaultMoveForce = 100;
 $PlatformCharacter::DefaultJumpSpeed = 8;
 $PlatformCharacter::DefaultIdleDamping = 10;
 $PlatformCharacter::DefaultAirControl = 0.3;
+$PlatformCharacter::DefaultSpeedLimit = 5;
 
 function PlatformCharacter::spawn(%input) {
    // Appearance
@@ -39,12 +40,8 @@ function PlatformCharacter::spawn(%input) {
    %p.setUpdateCallback(true);
 
    // Character properties
-   %p.moveSpeed = $PlatformCharacter::DefaultMoveSpeed;
-   %p.jumpSpeed = $PlatformCharacter::DefaultJumpSpeed;
-   %p.speedLimit = 5;
-
-   // Character properties
-   %p.moveSpeed = $PlatformCharacter::DefaultMoveSpeed;
+   %p.speedLimit = $PlatformCharacter::DefaultSpeedLimit;
+   %p.moveForce = $PlatformCharacter::DefaultMoveForce;
    %p.jumpSpeed = $PlatformCharacter::DefaultJumpSpeed;
    %p.airControl = $PlatformCharacter::DefaultAirControl;
    %p.idleDamping = $PlatformCharacter::DefaultIdleDamping;
@@ -62,7 +59,7 @@ function PlatformCharacter::spawn(%input) {
 
 function PlatformCharacter::left(%this, %p, %val) {
    if(isObject(%p)) {
-      %p.moveX -= %p.moveSpeed * (%val ? 1 : -1);
+      %p.moveX -= %p.moveForce * (%val ? 1 : -1);
    }
 }
 
@@ -71,7 +68,7 @@ function PlatformCharacter::secondaryLeft(%this, %val) { %this.left(PlatformChar
 
 function PlatformCharacter::right(%this, %p, %val) {
    if(isObject(%p)) {
-      %p.moveX += %p.moveSpeed * (%val ? 1 : -1);
+      %p.moveX += %p.moveForce * (%val ? 1 : -1);
    }
 }
 
