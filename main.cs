@@ -83,7 +83,6 @@ function PlatformCharacterSprite::onUpdate(%this) {
       %velX = %this.getLinearVelocityX();
       %force = %this.moveX / (mAbs(%velX) + 1);
       if(!%this.isTouchingGround()) {
-         echo("not on ground" SPC %this.airControl);
          %force *= %this.airControl;
       }
       %this.applyForce(%force SPC 0, %this.getPosition());
