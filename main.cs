@@ -1,9 +1,12 @@
 function PlatformCharacter::create(%this) {
    if(!isObject(PlatformControls)) {
       new ActionMap(PlatformControls);
-      PlatformControls.bindObj(keyboard, a, "left", %this);
-      PlatformControls.bindObj(keyboard, d, "right", %this);
-      PlatformControls.bindObj(keyboard, w, "jump", %this);
+      PlatformControls.bindObj(keyboard, a, "primaryLeft", %this);
+      PlatformControls.bindObj(keyboard, d, "primaryRight", %this);
+      PlatformControls.bindObj(keyboard, w, "primaryJump", %this);
+      PlatformControls.bindObj(keyboard, left, "secondaryLeft", %this);
+      PlatformControls.bindObj(keyboard, right, "secondaryRight", %this);
+      PlatformControls.bindObj(keyboard, up, "secondaryJump", %this);
       PlatformControls.push();
    }
 }
@@ -56,26 +59,32 @@ function PlatformCharacter::spawn(%input) {
    return %p;
 }
 
-function PlatformCharacter::left(%this, %val) {
-   if(isObject(PlatformCharacter.Primary)) {
-      %p = PlatformCharacter.Primary;
+function PlatformCharacter::left(%this, %p, %val) {
+   if(isObject(%p)) {
       %p.moveX -= %p.moveSpeed * (%val ? 1 : -1);
    }
 }
 
-function PlatformCharacter::right(%this, %val) {
-   if(isObject(PlatformCharacter.Primary)) {
-      %p = PlatformCharacter.Primary;
+function PlatformCharacter::primaryLeft(%this, %val) { %this.left(PlatformCharacter.Primary, %val); }
+function PlatformCharacter::secondaryLeft(%this, %val) { %this.left(PlatformCharacter.Secondary, %val); }
+
+function PlatformCharacter::right(%this, %p, %val) {
+   if(isObject(%p)) {
       %p.moveX += %p.moveSpeed * (%val ? 1 : -1);
    }
 }
 
-function PlatformCharacter::jump(%this, %val) {
-   if(%val && isObject(PlatformCharacter.Primary)) {
-      %p = PlatformCharacter.Primary;
+function PlatformCharacter::primaryRight(%this, %val) { %this.right(PlatformCharacter.Primary, %val); }
+function PlatformCharacter::secondaryRight(%this, %val) { %this.right(PlatformCharacter.Secondary, %val); }
+
+function PlatformCharacter::jump(%this, %p, %val) {
+   if(%val && isObject(%p)) {
       %p.setLinearVelocityY(%p.jumpSpeed);
    }
 }
+
+function PlatformCharacter::primaryJump(%this, %val) { %this.jump(PlatformCharacter.Primary, %val); }
+function PlatformCharacter::secondaryJump(%this, %val) { %this.jump(PlatformCharacter.Secondary, %val); }
 
 function PlatformCharacterSprite::onUpdate(%this) {
    // Update movement force
