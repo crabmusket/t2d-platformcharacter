@@ -15,9 +15,9 @@ function PlatformCharacter::destroy(%this) {
    }
 }
 
-$PlatformCharacter::DefaultMoveSpeed = 50;
-$PlatformCharacter::DefaultJumpSpeed = 5;
-$PlatformCharacter::DefaultFriction = 1.1;
+$PlatformCharacter::DefaultMoveSpeed = 100;
+$PlatformCharacter::DefaultJumpSpeed = 8;
+$PlatformCharacter::DefaultIdleDamping = 10;
 $PlatformCharacter::DefaultAirControl = 0.3;
 
 function PlatformCharacter::spawn(%input) {
@@ -28,7 +28,6 @@ function PlatformCharacter::spawn(%input) {
    // Collision/physics
    %p.setBodyType(dynamic);
    %p.FixedAngle = true;
-   %p.setDefaultFriction($PlatformCharacter::DefaultFriction);
    %p.groundCollisionShape = %p.createPolygonBoxCollisionShape(1, 2);
    %p.setGatherContacts(true);
 
@@ -39,11 +38,13 @@ function PlatformCharacter::spawn(%input) {
    // Character properties
    %p.moveSpeed = $PlatformCharacter::DefaultMoveSpeed;
    %p.jumpSpeed = $PlatformCharacter::DefaultJumpSpeed;
+   %p.speedLimit = 5;
 
    // Character properties
    %p.moveSpeed = $PlatformCharacter::DefaultMoveSpeed;
    %p.jumpSpeed = $PlatformCharacter::DefaultJumpSpeed;
    %p.airControl = $PlatformCharacter::DefaultAirControl;
+   %p.idleDamping = $PlatformCharacter::DefaultIdleDamping;
 
    // Control
    switch$(%input) {
@@ -77,16 +78,25 @@ function PlatformCharacter::jump(%this, %val) {
    }
 }
 
+function mSign(%val) { return %val >= 0 ? 1 : -1; }
+
 function PlatformCharacterSprite::onUpdate(%this) {
    // Update movement force
    if(%this.moveX != 0) {
-      %velX = %this.getLinearVelocityX();
-      %force = %this.moveX / (mAbs(%velX) + 1);
+      %force = %this.moveX;
       if(!%this.isTouchingGround()) {
          %force *= %this.airControl;
       }
-      %this.applyForce(%force SPC 0, %this.getPosition());
+      %velX = %this.getLinearVelocityX();
+      if(mAbs(%velX) > %this.speedLimit && mSign(%velX) == mSign(%this.moveX)) {
+         %force = 0;
+      }
+   } else {
+      if(%this.isTouchingGround()) {
+         %force = -1 * %this.getLinearVelocityX() * %this.idleDamping;
+      }
    }
+   %this.applyForce(%force SPC 0, %this.getPosition());
 }
 
 function PlatformCharacterSprite::isTouchingGround(%this) {
