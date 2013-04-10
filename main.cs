@@ -3,6 +3,7 @@ function PlatformCharacter::create(%this) {
       new ActionMap(PlatformControls);
       PlatformControls.bindObj(keyboard, a, "left", %this);
       PlatformControls.bindObj(keyboard, d, "right", %this);
+      PlatformControls.bindObj(keyboard, w, "jump", %this);
       PlatformControls.push();
    }
 }
@@ -47,6 +48,12 @@ function PlatformCharacter::right(%this, %val) {
    if(isObject(PlatformCharacter.Primary)) {
       PlatformCharacter.Primary.moveX += %val ? 1 : -1;
       PlatformCharacter.Primary.updateMovement();
+   }
+}
+
+function PlatformCharacter::jump(%this, %val) {
+   if(%val && isObject(PlatformCharacter.Primary)) {
+      PlatformCharacter.Primary.setLinearVelocityY(5);
    }
 }
 
