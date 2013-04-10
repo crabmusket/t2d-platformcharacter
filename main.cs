@@ -15,8 +15,9 @@ function PlatformCharacter::destroy(%this) {
    }
 }
 
-$PlatformCharacter::DefaultMoveSpeed = 3;
+$PlatformCharacter::DefaultMoveSpeed = 50;
 $PlatformCharacter::DefaultJumpSpeed = 5;
+$PlatformCharacter::DefaultFriction = 1.1;
 
 function PlatformCharacter::spawn(%input) {
    // Appearance
@@ -26,8 +27,16 @@ function PlatformCharacter::spawn(%input) {
    // Collision/physics
    %p.setBodyType(dynamic);
    %p.FixedAngle = true;
-   %p.setDefaultFriction(0);
-   %p.createPolygonBoxCollisionShape(1, 2);
+   %p.setDefaultFriction($PlatformCharacter::DefaultFriction);
+   %p.groundCollisionShape = %p.createPolygonBoxCollisionShape(1, 2);
+
+   // Movement
+   %p.moveX = 0;
+   %p.setUpdateCallback(true);
+
+   // Character properties
+   %p.moveSpeed = $PlatformCharacter::DefaultMoveSpeed;
+   %p.jumpSpeed = $PlatformCharacter::DefaultJumpSpeed;
 
    // Character properties
    %p.moveSpeed = $PlatformCharacter::DefaultMoveSpeed;
@@ -68,5 +77,18 @@ function PlatformCharacter::jump(%this, %val) {
 }
 
 function PlatformCharacterSprite::updateMovement(%this) {
-   %this.setLinearVelocityX(%this.moveX);
+   %friction = 0.2;
+   if(%this.moveX != 0) {
+      %friction = 0;
+   }
+   %this.setCollisionShapeFriction(%this.groundCollisionShape, %friction);
+}
+
+function PlatformCharacterSprite::onUpdate(%this) {
+   // Update movement force
+   if(%this.moveX != 0) {
+      %velX = %this.getLinearVelocityX();
+      %force = %this.moveX / (mAbs(%velX) + 1) SPC 0;
+      %this.applyForce(%force, %this.getPosition());
+   }
 }
