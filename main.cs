@@ -62,7 +62,8 @@ function PlatformCharacter::right(%this, %val) {
 
 function PlatformCharacter::jump(%this, %val) {
    if(%val && isObject(PlatformCharacter.Primary)) {
-      PlatformCharacter.Primary.setLinearVelocityY(5);
+      %p = PlatformCharacter.Primary;
+      %p.setLinearVelocityY(%p.jumpSpeed);
    }
 }
 
