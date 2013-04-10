@@ -14,17 +14,42 @@ function PlatformCharacter::destroy(%this) {
    }
 }
 
-function PlatformCharacter::left(%this, %val) {
-   echo("left" SPC %val);
-}
-
-function PlatformCharacter::right(%this, %val) {
-   echo("right" SPC %val);
-}
-
 function PlatformCharacter::spawn(%input) {
-   %p = new Sprite();
+   // Appearance
+   %p = new Sprite() { class = "PlatformCharacterSprite"; };
    %p.setSize("1 2");
+
+   // Collision/physics
+   %p.setBodyType(dynamic);
+   %p.FixedAngle = true;
+   %p.setDefaultFriction(0);
+   %p.createPolygonBoxCollisionShape(1, 2);
+
+   // Control
+   switch$(%input) {
+      case "primary":
+         PlatformCharacter.Primary = %p;
+      case "secondary":
+         PlatformCharacter.Secondary = %p;
+   }
+
    return %p;
 }
 
+function PlatformCharacter::left(%this, %val) {
+   if(isObject(PlatformCharacter.Primary)) {
+      PlatformCharacter.Primary.moveX -= %val ? 1 : -1;
+      PlatformCharacter.Primary.updateMovement();
+   }
+}
+
+function PlatformCharacter::right(%this, %val) {
+   if(isObject(PlatformCharacter.Primary)) {
+      PlatformCharacter.Primary.moveX += %val ? 1 : -1;
+      PlatformCharacter.Primary.updateMovement();
+   }
+}
+
+function PlatformCharacterSprite::updateMovement(%this) {
+   %this.setLinearVelocityX(%this.moveX);
+}
