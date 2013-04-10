@@ -57,7 +57,6 @@ function PlatformCharacter::left(%this, %val) {
    if(isObject(PlatformCharacter.Primary)) {
       %p = PlatformCharacter.Primary;
       %p.moveX -= %p.moveSpeed * (%val ? 1 : -1);
-      %p.updateMovement();
    }
 }
 
@@ -65,7 +64,6 @@ function PlatformCharacter::right(%this, %val) {
    if(isObject(PlatformCharacter.Primary)) {
       %p = PlatformCharacter.Primary;
       %p.moveX += %p.moveSpeed * (%val ? 1 : -1);
-      %p.updateMovement();
    }
 }
 
@@ -74,14 +72,6 @@ function PlatformCharacter::jump(%this, %val) {
       %p = PlatformCharacter.Primary;
       %p.setLinearVelocityY(%p.jumpSpeed);
    }
-}
-
-function PlatformCharacterSprite::updateMovement(%this) {
-   %friction = 0.2;
-   if(%this.moveX != 0) {
-      %friction = 0;
-   }
-   %this.setCollisionShapeFriction(%this.groundCollisionShape, %friction);
 }
 
 function PlatformCharacterSprite::onUpdate(%this) {
