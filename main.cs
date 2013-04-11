@@ -15,6 +15,7 @@ function PlatformCharacter::create(%this) {
       PlatformCharacter.DefaultAirControl = 0.2;
       PlatformCharacter.DefaultSpeedLimit = 5;
       PlatformCharacter.DefaultJumpBoostForce = 18;
+      PlatformCharacter.DefaultJumpBoostTime = 0.75;
       PlatformCharacter.DefaultGravityScale = 2;
    }
 }
@@ -41,6 +42,7 @@ function PlatformCharacter::spawn(%input) {
    // Movement
    %p.moveX = 0;
    %p.jumping = false;
+   %p.jumpStart = 0;
    %p.setUpdateCallback(true);
 
    // Character properties
@@ -48,6 +50,7 @@ function PlatformCharacter::spawn(%input) {
    %p.moveForce = PlatformCharacter.DefaultMoveForce;
    %p.jumpSpeed = PlatformCharacter.DefaultJumpSpeed;
    %p.jumpBoostForce = PlatformCharacter.DefaultJumpBoostForce;
+   %p.jumpBoostTime = PlatformCharacter.DefaultJumpBoostTime;
    %p.airControl = PlatformCharacter.DefaultAirControl;
    %p.idleDamping = PlatformCharacter.DefaultIdleDamping;
 
@@ -86,6 +89,7 @@ function PlatformCharacter::jump(%this, %p, %val) {
          if(%p.isTouchingGround()) {
             %p.setLinearVelocityY(%p.jumpSpeed);
             %p.jumping = true;
+            %p.jumpStart = getSimTime();
          }
       } else {
          %p.jumping = false;
@@ -99,11 +103,18 @@ function PlatformCharacter::secondaryJump(%this, %val) { %this.jump(PlatformChar
 function mSign(%val) { return %val >= 0 ? 1 : -1; }
 
 function PlatformCharacterSprite::onUpdate(%this) {
+   // Allow jumping status to time out
+   if(%this.jumping) {
+      if(getSimTime() - %this.jumpStart > %this.jumpBoostTime * 1000) {
+         %this.jumping = false;
+      }
+   }
    // Update movement force
    %forceX = 0;
    %forceY = 0;
    %ground = %this.isTouchingGround();
    if(%this.moveX != 0) {
+      // Apply movement force on the ground and in the air
       %forceX = %this.moveX;
       if(!%ground) {
          %forceX *= %this.airControl;
@@ -113,6 +124,7 @@ function PlatformCharacterSprite::onUpdate(%this) {
          %forceX = 0;
       }
    } else {
+      // Simulate ground friction
       if(%ground) {
          %forceX = -1 * %this.getLinearVelocityX() * %this.idleDamping;
       }
