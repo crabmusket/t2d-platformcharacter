@@ -1,4 +1,9 @@
 function PlatformCharacter::create(%this) {
+   /*    Behavior template
+    * The template is used to instantiate actual behaviors that control objects
+    * in the simulation. It has a name because it needs to have its own namespace,
+    * unfortunately. Chose a name very similar to the module name.
+    */
    if(!isObject(PlatformCharacterControls)) {
       %bt = new BehaviorTemplate(PlatformCharacterControls);
 
@@ -12,29 +17,44 @@ function PlatformCharacter::create(%this) {
       %bt.addBehaviorField(controlsEnabled, "Enable direct control", bool, true);
    }
 
-   if(!isObject(PlatformCharacter.ControlsMap)) {
+   /*    Action map
+    * This module gets its own ActionMap. It doesn't have a name, instead being referred
+    * to as PlatformCharacter.ActionMap. This way, exterior code can turn these keybinds
+    * on and off nondestructively by pushing and popping the action map.
+    */
+   if(!isObject(PlatformCharacter.ActionMap)) {
       %am = new ActionMap();
-      PlatformCharacter.ControlsMap = %am;
+      PlatformCharacter.ActionMap = %am;
       %am.push();
-
-      PlatformCharacter.DefaultMoveForce = 100;
-      PlatformCharacter.DefaultJumpSpeed = 8;
-      PlatformCharacter.DefaultIdleDamping = 10;
-      PlatformCharacter.DefaultAirControl = 0.2;
-      PlatformCharacter.DefaultSpeedLimit = 5;
-      PlatformCharacter.DefaultJumpBoostForce = 18;
-      PlatformCharacter.DefaultJumpBoostTime = 0.75;
-      PlatformCharacter.DefaultGravityScale = 2;
    }
+
+   /*    Defaults
+    * These default values are not global variables, but properties of the module object.
+    * No use polluting the global namespace. These global properties allow the end-user
+    * to easily configure the module if there are defaults they like better than the current
+    * ones. Then they don't have to set them explicitly every time they create a new character.
+    */
+   PlatformCharacter.DefaultMoveForce = 100;
+   PlatformCharacter.DefaultJumpSpeed = 8;
+   PlatformCharacter.DefaultIdleDamping = 10;
+   PlatformCharacter.DefaultAirControl = 0.2;
+   PlatformCharacter.DefaultSpeedLimit = 5;
+   PlatformCharacter.DefaultJumpBoostForce = 18;
+   PlatformCharacter.DefaultJumpBoostTime = 0.75;
+   PlatformCharacter.DefaultGravityScale = 2;
 }
 
 function PlatformCharacter::destroy(%this) {
-   if(isObject(PlatformCharacter.ControlsMap)) {
-      PlatformCharacter.ControlsMap.pop();
-      PlatformCharacter.ControlsMap.delete();
+   if(isObject(PlatformCharacter.ActionMap)) {
+      PlatformCharacter.ActionMap.pop();
+      PlatformCharacter.ActionMap.delete();
    }
 }
 
+/*    Spawning
+ * This is a convenience function intended to make the process of creating a character
+ * easier. It also provides access to the default keybind configuration.
+ */
 function PlatformCharacter::spawn(%input) {
    %p = new Sprite();
 
@@ -58,7 +78,7 @@ function PlatformCharacter::spawn(%input) {
 
 function PlatformCharacterControls::onBehaviorAdd(%this) {
    // Control
-   %am = PlatformCharacter.ControlsMap;
+   %am = PlatformCharacter.ActionMap;
    %am.bindObj(getWord(%this.leftKey, 0), getWord(%this.leftKey, 1), "left", %this);
    %am.bindObj(getWord(%this.rightKey, 0), getWord(%this.rightKey, 1), "right", %this);
    %am.bindObj(getWord(%this.jumpKey, 0), getWord(%this.jumpKey, 1), "jump", %this);
@@ -68,7 +88,7 @@ function PlatformCharacterControls::onBehaviorAdd(%this) {
    // Collision/physics
    %sizeX = 1;
    %sizeY = 2;
-   %p.setSize(%sizeX SPC %sizeY);
+   %p.setSize(%sizeX, %sizeY);
    %p.setBodyType(dynamic);
    %p.fixedAngle = true;
    %p.groundCollisionShape = %p.createPolygonBoxCollisionShape(%sizeX, %sizeY);
