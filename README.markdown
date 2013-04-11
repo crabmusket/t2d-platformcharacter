@@ -17,7 +17,7 @@ Or you can achieve the same effect by [downloading a ZIP file][Download].
 Note that this will download the latest version of the `master` branch, which will be stable
 but may be out of date.
 
-  [Download]: https://github.com/eightyeight/t2d-platformcharacter/archive/development.zip
+  [Download]: https://github.com/eightyeight/t2d-platformcharacter/archive/master.zip
 
 # Use
 
