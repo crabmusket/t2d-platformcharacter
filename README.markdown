@@ -46,12 +46,12 @@ There are certain default properties you can edit that will affect all subsequen
 The default values are shown below:
 
 ```
-$PlatformCharacter::DefaultspeedLimit = 5; // Maximum horizontal speed due to input (units/second)
-$PlatformCharacter::DefaultMoveForce = 100; // Force applied when moving.
-$PlatformCharacter::DefaultJumpSpeed = 8; // Vertical speed applied at start of jump.
-$PlatformCharacter::DefaultAirControl = 0.3; // Multiplier on movement forces while in air.
-$PlatformCharacter::DefaultIdleDamping = 10; // Slowing factor when the character is now moving.
-$PlatformCharacter::DefaultGravityScale = 2; // Multiplier on gravity (tested with gravity=10).
+PlatformCharacter.DefaultspeedLimit = 5; // Maximum horizontal speed due to input (units/second)
+PlatformCharacter.DefaultMoveForce = 100; // Force applied when moving.
+PlatformCharacter.DefaultJumpSpeed = 8; // Vertical speed applied at start of jump.
+PlatformCharacter.DefaultAirControl = 0.3; // Multiplier on movement forces while in air.
+PlatformCharacter.DefaultIdleDamping = 10; // Slowing factor when the character is now moving.
+PlatformCharacter.DefaultGravityScale = 2; // Multiplier on gravity (tested with gravity=10).
 %p1 = PlatformCharacter::spawn("primary");
 %p2 = PlatformCharacter::spawn("secondary");
 ```
