@@ -1,13 +1,21 @@
 function PlatformCharacter::create(%this) {
-   if(!isObject(PlatformControls)) {
-      new ActionMap(PlatformControls);
-      PlatformControls.bindObj(keyboard, a, "primaryLeft", %this);
-      PlatformControls.bindObj(keyboard, d, "primaryRight", %this);
-      PlatformControls.bindObj(keyboard, w, "primaryJump", %this);
-      PlatformControls.bindObj(keyboard, left, "secondaryLeft", %this);
-      PlatformControls.bindObj(keyboard, right, "secondaryRight", %this);
-      PlatformControls.bindObj(keyboard, up, "secondaryJump", %this);
-      PlatformControls.push();
+   if(!isObject(PlatformCharacterControls)) {
+      %bt = new BehaviorTemplate(PlatformCharacterControls);
+
+      %bt.FriendlyName = "Platformer Character Controls";
+      %bt.BehaviorType = "Input";
+      %bt.Description = "Physically-based side-scrolling character movement.";
+
+      %bt.addBehaviorField(leftKey, "Key to bind to left movement", keybind, "keyboard a");
+      %bt.addBehaviorField(rightKey, "Key to bind to right movement", keybind, "keyboard d");
+      %bt.addBehaviorField(jumpKey, "Key to bind to jumping", keybind, "keyboard w");
+      %bt.addBehaviorField(controlsEnabled, "Enable direct control", bool, true);
+   }
+
+   if(!isObject(PlatformCharacter.ControlsMap)) {
+      %am = new ActionMap();
+      PlatformCharacter.ControlsMap = %am;
+      %am.push();
 
       PlatformCharacter.DefaultMoveForce = 100;
       PlatformCharacter.DefaultJumpSpeed = 8;
@@ -21,21 +29,49 @@ function PlatformCharacter::create(%this) {
 }
 
 function PlatformCharacter::destroy(%this) {
-   if(isObject(PlatformControls)) {
-      PlatformControls.pop();
-      PlatformControls.delete();
+   if(isObject(PlatformCharacter.ControlsMap)) {
+      PlatformCharacter.ControlsMap.pop();
+      PlatformCharacter.ControlsMap.delete();
    }
 }
 
 function PlatformCharacter::spawn(%input) {
-   // Appearance
-   %p = new Sprite() { class = "PlatformCharacterSprite"; };
-   %p.setSize("1 2");
+   %p = new Sprite();
+
+   %b = PlatformCharacterControls.createInstance();
+   switch$(%input) {
+      case "primary":
+         %b.leftKey = "keyboard a";
+         %b.rightKey = "keyboard d";
+         %b.jumpKey = "keyboard w";
+      case "secondary":
+         %b.leftKey = "keyboard left";
+         %b.rightKey = "keyboard right";
+         %b.jumpKey = "keyboard up";
+      default:
+         %b.controlsEnabled = false;
+   }
+   %p.addBehavior(%b);
+
+   return %p;
+}
+
+function PlatformCharacterControls::onBehaviorAdd(%this) {
+   // Control
+   %am = PlatformCharacter.ControlsMap;
+   %am.bindObj(getWord(%this.leftKey, 0), getWord(%this.leftKey, 1), "left", %this);
+   %am.bindObj(getWord(%this.rightKey, 0), getWord(%this.rightKey, 1), "right", %this);
+   %am.bindObj(getWord(%this.jumpKey, 0), getWord(%this.jumpKey, 1), "jump", %this);
+
+   %p = %this.owner;
 
    // Collision/physics
+   %sizeX = 1;
+   %sizeY = 2;
+   %p.setSize(%sizeX SPC %sizeY);
    %p.setBodyType(dynamic);
-   %p.FixedAngle = true;
-   %p.groundCollisionShape = %p.createPolygonBoxCollisionShape(1, 2);
+   %p.fixedAngle = true;
+   %p.groundCollisionShape = %p.createPolygonBoxCollisionShape(%sizeX, %sizeY);
    %p.setGatherContacts(true);
    %p.setGravityScale(PlatformCharacter.DefaultGravityScale);
 
@@ -53,92 +89,72 @@ function PlatformCharacter::spawn(%input) {
    %p.jumpBoostTime = PlatformCharacter.DefaultJumpBoostTime;
    %p.airControl = PlatformCharacter.DefaultAirControl;
    %p.idleDamping = PlatformCharacter.DefaultIdleDamping;
-
-   // Control
-   switch$(%input) {
-      case "primary":
-         PlatformCharacter.Primary = %p;
-      case "secondary":
-         PlatformCharacter.Secondary = %p;
-   }
-
-   return %p;
 }
 
-function PlatformCharacter::left(%this, %p, %val) {
-   if(isObject(%p)) {
-      %p.moveX -= %p.moveForce * (%val ? 1 : -1);
-   }
+function PlatformCharacterControls::left(%this, %val) {
+   %p = %this.owner;
+   %p.moveX -= %p.moveForce * (%val ? 1 : -1);
 }
 
-function PlatformCharacter::primaryLeft(%this, %val) { %this.left(PlatformCharacter.Primary, %val); }
-function PlatformCharacter::secondaryLeft(%this, %val) { %this.left(PlatformCharacter.Secondary, %val); }
-
-function PlatformCharacter::right(%this, %p, %val) {
-   if(isObject(%p)) {
-      %p.moveX += %p.moveForce * (%val ? 1 : -1);
-   }
+function PlatformCharacterControls::right(%this, %val) {
+   %p = %this.owner;
+   %p.moveX += %p.moveForce * (%val ? 1 : -1);
 }
 
-function PlatformCharacter::primaryRight(%this, %val) { %this.right(PlatformCharacter.Primary, %val); }
-function PlatformCharacter::secondaryRight(%this, %val) { %this.right(PlatformCharacter.Secondary, %val); }
-
-function PlatformCharacter::jump(%this, %p, %val) {
-   if(isObject(%p)) {
-      if(%val) {
-         if(%p.isTouchingGround()) {
-            %p.setLinearVelocityY(%p.jumpSpeed);
-            %p.jumping = true;
-            %p.jumpStart = getSimTime();
-         }
-      } else {
-         %p.jumping = false;
+function PlatformCharacterControls::jump(%this, %val) {
+   %p = %this.owner;
+   if(%val) {
+      if(%this.isTouchingGround()) {
+         %p.setLinearVelocityY(%p.jumpSpeed);
+         %p.jumping = true;
+         %p.jumpStart = getSimTime();
       }
+   } else {
+      %p.jumping = false;
    }
 }
-
-function PlatformCharacter::primaryJump(%this, %val) { %this.jump(PlatformCharacter.Primary, %val); }
-function PlatformCharacter::secondaryJump(%this, %val) { %this.jump(PlatformCharacter.Secondary, %val); }
 
 function mSign(%val) { return %val >= 0 ? 1 : -1; }
 
-function PlatformCharacterSprite::onUpdate(%this) {
+function PlatformCharacterControls::onUpdate(%this) {
+   %p = %this.owner;
    // Allow jumping status to time out
-   if(%this.jumping) {
-      if(getSimTime() - %this.jumpStart > %this.jumpBoostTime * 1000) {
-         %this.jumping = false;
+   if(%p.jumping) {
+      if(getSimTime() - %p.jumpStart > %p.jumpBoostTime * 1000) {
+         %p.jumping = false;
       }
    }
    // Update movement force
    %forceX = 0;
    %forceY = 0;
    %ground = %this.isTouchingGround();
-   if(%this.moveX != 0) {
+   if(%p.moveX != 0) {
       // Apply movement force on the ground and in the air
-      %forceX = %this.moveX;
+      %forceX = %p.moveX;
       if(!%ground) {
-         %forceX *= %this.airControl;
+         %forceX *= %p.airControl;
       }
-      %velX = %this.getLinearVelocityX();
-      if(mAbs(%velX) > %this.speedLimit && mSign(%velX) == mSign(%this.moveX)) {
+      %velX = %p.getLinearVelocityX();
+      if(mAbs(%velX) > %p.speedLimit && mSign(%velX) == mSign(%p.moveX)) {
          %forceX = 0;
       }
    } else {
       // Simulate ground friction
       if(%ground) {
-         %forceX = -1 * %this.getLinearVelocityX() * %this.idleDamping;
+         %forceX = -1 * %p.getLinearVelocityX() * %p.idleDamping;
       }
    }
-   if(%this.jumping && !%ground) {
-      %forceY = %this.jumpBoostForce;
+   if(%p.jumping && !%ground) {
+      %forceY = %p.jumpBoostForce;
    }
-   %this.applyForce(%forceX SPC %forceY, %this.getPosition());
+   %p.applyForce(%forceX SPC %forceY, %p.getPosition());
 }
 
-function PlatformCharacterSprite::isTouchingGround(%this) {
+function PlatformCharacterControls::isTouchingGround(%this) {
+   %p = %this.owner;
    %i = 0;
-   while(%i < %this.getContactCount()) {
-      if(getWord(%this.getContact(%i), 1) == %this.groundCollisionShape) {
+   while(%i < %p.getContactCount()) {
+      if(getWord(%p.getContact(%i), 1) == %p.groundCollisionShape) {
          return true;
       }
       %i++;
