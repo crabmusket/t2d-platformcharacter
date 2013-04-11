@@ -8,6 +8,14 @@ function PlatformCharacter::create(%this) {
       PlatformControls.bindObj(keyboard, right, "secondaryRight", %this);
       PlatformControls.bindObj(keyboard, up, "secondaryJump", %this);
       PlatformControls.push();
+
+      PlatformCharacter.DefaultMoveForce = 100;
+      PlatformCharacter.DefaultJumpSpeed = 8;
+      PlatformCharacter.DefaultIdleDamping = 10;
+      PlatformCharacter.DefaultAirControl = 0.2;
+      PlatformCharacter.DefaultSpeedLimit = 5;
+      PlatformCharacter.DefaultJumpBoostForce = 18;
+      PlatformCharacter.DefaultGravityScale = 2;
    }
 }
 
@@ -17,14 +25,6 @@ function PlatformCharacter::destroy(%this) {
       PlatformControls.delete();
    }
 }
-
-$PlatformCharacter::DefaultMoveForce = 100;
-$PlatformCharacter::DefaultJumpSpeed = 8;
-$PlatformCharacter::DefaultIdleDamping = 10;
-$PlatformCharacter::DefaultAirControl = 0.2;
-$PlatformCharacter::DefaultSpeedLimit = 5;
-$PlatformCharacter::DefaultJumpContinueForce = 18;
-$PlatformCharacter::DefaultGravityScale = 2;
 
 function PlatformCharacter::spawn(%input) {
    // Appearance
@@ -36,7 +36,7 @@ function PlatformCharacter::spawn(%input) {
    %p.FixedAngle = true;
    %p.groundCollisionShape = %p.createPolygonBoxCollisionShape(1, 2);
    %p.setGatherContacts(true);
-   %p.setGravityScale($PlatformCharacter::DefaultGravityScale);
+   %p.setGravityScale(PlatformCharacter.DefaultGravityScale);
 
    // Movement
    %p.moveX = 0;
@@ -44,12 +44,12 @@ function PlatformCharacter::spawn(%input) {
    %p.setUpdateCallback(true);
 
    // Character properties
-   %p.speedLimit = $PlatformCharacter::DefaultSpeedLimit;
-   %p.moveForce = $PlatformCharacter::DefaultMoveForce;
-   %p.jumpSpeed = $PlatformCharacter::DefaultJumpSpeed;
-   %p.jumpContinueForce = $PlatformCharacter::DefaultJumpContinueForce;
-   %p.airControl = $PlatformCharacter::DefaultAirControl;
-   %p.idleDamping = $PlatformCharacter::DefaultIdleDamping;
+   %p.speedLimit = PlatformCharacter.DefaultSpeedLimit;
+   %p.moveForce = PlatformCharacter.DefaultMoveForce;
+   %p.jumpSpeed = PlatformCharacter.DefaultJumpSpeed;
+   %p.jumpBoostForce = PlatformCharacter.DefaultJumpBoostForce;
+   %p.airControl = PlatformCharacter.DefaultAirControl;
+   %p.idleDamping = PlatformCharacter.DefaultIdleDamping;
 
    // Control
    switch$(%input) {
@@ -118,7 +118,7 @@ function PlatformCharacterSprite::onUpdate(%this) {
       }
    }
    if(%this.jumping && !%ground) {
-      %forceY = %this.jumpContinueForce;
+      %forceY = %this.jumpBoostForce;
    }
    %this.applyForce(%forceX SPC %forceY, %this.getPosition());
 }
