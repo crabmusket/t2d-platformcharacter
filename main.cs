@@ -19,11 +19,12 @@ function PlatformCharacter::destroy(%this) {
 }
 
 $PlatformCharacter::DefaultMoveForce = 100;
-$PlatformCharacter::DefaultJumpSpeed = 7;
+$PlatformCharacter::DefaultJumpSpeed = 8;
 $PlatformCharacter::DefaultIdleDamping = 10;
-$PlatformCharacter::DefaultAirControl = 0.3;
+$PlatformCharacter::DefaultAirControl = 0.2;
 $PlatformCharacter::DefaultSpeedLimit = 5;
-$PlatformCharacter::DefaultJumpContinueForce = 8;
+$PlatformCharacter::DefaultJumpContinueForce = 18;
+$PlatformCharacter::DefaultGravityScale = 2;
 
 function PlatformCharacter::spawn(%input) {
    // Appearance
@@ -35,6 +36,7 @@ function PlatformCharacter::spawn(%input) {
    %p.FixedAngle = true;
    %p.groundCollisionShape = %p.createPolygonBoxCollisionShape(1, 2);
    %p.setGatherContacts(true);
+   %p.setGravityScale($PlatformCharacter::DefaultGravityScale);
 
    // Movement
    %p.moveX = 0;
