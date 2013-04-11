@@ -42,22 +42,23 @@ This will create one character who moves with WASD and one who moves with the ar
 
 # Customisation
 
-Once a character is created, you can edit certain properties to make them behave differently.
-The defaults are as follows:
+There are certain default properties you can edit that will affect all subsequently-created characters.
+The default values are shown below:
+
+```
+$PlatformCharacter::DefaultspeedLimit = 5; // Maximum horizontal speed due to input (units/second)
+$PlatformCharacter::DefaultMoveForce = 100; // Force applied when moving.
+$PlatformCharacter::DefaultJumpSpeed = 8; // Vertical speed applied at start of jump.
+$PlatformCharacter::DefaultAirControl = 0.3; // Multiplier on movement forces while in air.
+$PlatformCharacter::DefaultIdleDamping = 10; // Slowing factor when the character is now moving.
+$PlatformCharacter::DefaultGravityScale = 2; // Multiplier on gravity (tested with gravity=10).
+%p1 = PlatformCharacter::spawn("primary");
+%p2 = PlatformCharacter::spawn("secondary");
+```
+
+You can also edit these properties after a character has been created:
 
 ```
 %p = PlatformCharacter::spawn("primary");
-%p.speedLimit = 5; // Maximum horizontal speed due to input (units/second)
-%p.moveForce = 100; // Force applied when moving.
-%p.jumpSpeed = 8; // Vertical speed applied at start of jump.
-%p.airControl = 0.3; // Multiplier on movement forces while in air.
-%p.idleDamping = 10; // Slowing factor when the character is now moving.
-```
-
-There are also global variables that set the default values - for example:
-
-```
-$PlatformCharacter::DefaultSpeedLimit = 7; // Applied to both characters created below.
-%p1 = PlatformCharacter::spawn("primary");
-%p2 = PlatformCharacter::spawn("secondary");
+%p.airControl = 0.5; // More air control!
 ```

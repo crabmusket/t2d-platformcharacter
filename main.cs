@@ -21,8 +21,10 @@ function PlatformCharacter::destroy(%this) {
 $PlatformCharacter::DefaultMoveForce = 100;
 $PlatformCharacter::DefaultJumpSpeed = 8;
 $PlatformCharacter::DefaultIdleDamping = 10;
-$PlatformCharacter::DefaultAirControl = 0.3;
+$PlatformCharacter::DefaultAirControl = 0.2;
 $PlatformCharacter::DefaultSpeedLimit = 5;
+$PlatformCharacter::DefaultJumpContinueForce = 18;
+$PlatformCharacter::DefaultGravityScale = 2;
 
 function PlatformCharacter::spawn(%input) {
    // Appearance
@@ -34,15 +36,18 @@ function PlatformCharacter::spawn(%input) {
    %p.FixedAngle = true;
    %p.groundCollisionShape = %p.createPolygonBoxCollisionShape(1, 2);
    %p.setGatherContacts(true);
+   %p.setGravityScale($PlatformCharacter::DefaultGravityScale);
 
    // Movement
    %p.moveX = 0;
+   %p.jumping = false;
    %p.setUpdateCallback(true);
 
    // Character properties
    %p.speedLimit = $PlatformCharacter::DefaultSpeedLimit;
    %p.moveForce = $PlatformCharacter::DefaultMoveForce;
    %p.jumpSpeed = $PlatformCharacter::DefaultJumpSpeed;
+   %p.jumpContinueForce = $PlatformCharacter::DefaultJumpContinueForce;
    %p.airControl = $PlatformCharacter::DefaultAirControl;
    %p.idleDamping = $PlatformCharacter::DefaultIdleDamping;
 
@@ -76,8 +81,15 @@ function PlatformCharacter::primaryRight(%this, %val) { %this.right(PlatformChar
 function PlatformCharacter::secondaryRight(%this, %val) { %this.right(PlatformCharacter.Secondary, %val); }
 
 function PlatformCharacter::jump(%this, %p, %val) {
-   if(%val && isObject(%p)) {
-      %p.setLinearVelocityY(%p.jumpSpeed);
+   if(isObject(%p)) {
+      if(%val) {
+         if(%p.isTouchingGround()) {
+            %p.setLinearVelocityY(%p.jumpSpeed);
+            %p.jumping = true;
+         }
+      } else {
+         %p.jumping = false;
+      }
    }
 }
 
@@ -88,21 +100,27 @@ function mSign(%val) { return %val >= 0 ? 1 : -1; }
 
 function PlatformCharacterSprite::onUpdate(%this) {
    // Update movement force
+   %forceX = 0;
+   %forceY = 0;
+   %ground = %this.isTouchingGround();
    if(%this.moveX != 0) {
-      %force = %this.moveX;
-      if(!%this.isTouchingGround()) {
-         %force *= %this.airControl;
+      %forceX = %this.moveX;
+      if(!%ground) {
+         %forceX *= %this.airControl;
       }
       %velX = %this.getLinearVelocityX();
       if(mAbs(%velX) > %this.speedLimit && mSign(%velX) == mSign(%this.moveX)) {
-         %force = 0;
+         %forceX = 0;
       }
    } else {
-      if(%this.isTouchingGround()) {
-         %force = -1 * %this.getLinearVelocityX() * %this.idleDamping;
+      if(%ground) {
+         %forceX = -1 * %this.getLinearVelocityX() * %this.idleDamping;
       }
    }
-   %this.applyForce(%force SPC 0, %this.getPosition());
+   if(%this.jumping && !%ground) {
+      %forceY = %this.jumpContinueForce;
+   }
+   %this.applyForce(%forceX SPC %forceY, %this.getPosition());
 }
 
 function PlatformCharacterSprite::isTouchingGround(%this) {
