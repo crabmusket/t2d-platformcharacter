@@ -174,7 +174,9 @@ function PlatformCharacterControls::isTouchingGround(%this) {
    %p = %this.owner;
    %i = 0;
    while(%i < %p.getContactCount()) {
-      if(getWord(%p.getContact(%i), 1) == %p.groundCollisionShape) {
+      %c = %p.getContact(%i);
+      if(getWord(%c, 1) == %p.groundCollisionShape &&
+         getWord(%c, 4) > 0.5) {
          return true;
       }
       %i++;
