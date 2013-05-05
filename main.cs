@@ -14,6 +14,7 @@ function PlatformCharacter::create(%this) {
       %bt.addBehaviorField(leftKey, "Key to bind to left movement", keybind, "keyboard a");
       %bt.addBehaviorField(rightKey, "Key to bind to right movement", keybind, "keyboard d");
       %bt.addBehaviorField(jumpKey, "Key to bind to jumping", keybind, "keyboard w");
+      %bt.addBehaviorField(attackKey, "Key to bind to attacking", keybind, "keyboard i");
       %bt.addBehaviorField(controlsEnabled, "Enable direct control", bool, true);
    }
 
@@ -64,10 +65,12 @@ function PlatformCharacter::spawn(%input) {
          %b.leftKey = "keyboard a";
          %b.rightKey = "keyboard d";
          %b.jumpKey = "keyboard w";
+         %b.attackKey = "keyboard i";
       case "secondary":
          %b.leftKey = "keyboard left";
          %b.rightKey = "keyboard right";
          %b.jumpKey = "keyboard up";
+         %b.attackKey = "keyboard z";
       default:
          %b.controlsEnabled = false;
    }
@@ -82,6 +85,7 @@ function PlatformCharacterControls::onBehaviorAdd(%this) {
    %am.bindObj(getWord(%this.leftKey, 0), getWord(%this.leftKey, 1), "left", %this);
    %am.bindObj(getWord(%this.rightKey, 0), getWord(%this.rightKey, 1), "right", %this);
    %am.bindObj(getWord(%this.jumpKey, 0), getWord(%this.jumpKey, 1), "jump", %this);
+   %am.bindObj(getWord(%this.attackKey, 0), getWord(%this.attackKey, 1), "attack", %this);
 
    %p = %this.owner;
 
@@ -109,6 +113,9 @@ function PlatformCharacterControls::onBehaviorAdd(%this) {
    %p.jumpBoostTime = PlatformCharacter.DefaultJumpBoostTime;
    %p.airControl = PlatformCharacter.DefaultAirControl;
    %p.idleDamping = PlatformCharacter.DefaultIdleDamping;
+
+   // Damage
+   Damage.able(%p);
 }
 
 function PlatformCharacterControls::left(%this, %val) {
@@ -131,6 +138,13 @@ function PlatformCharacterControls::jump(%this, %val) {
       }
    } else {
       %p.jumping = false;
+   }
+}
+
+function PlatformCharacterControls::attack(%this, %val) {
+   %p = %this.owner;
+   if(%val) {
+      Damage.everythingAttackedNear(%p, 1, 10);
    }
 }
 

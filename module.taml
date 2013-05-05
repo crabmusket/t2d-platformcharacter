@@ -2,5 +2,6 @@
    ModuleId="PlatformCharacter"
    VersionId="1"
    ScriptFile="main.cs"
+   Dependencies="Damage=1"
    CreateFunction="create"
    DestroyFunction="destroy" />
